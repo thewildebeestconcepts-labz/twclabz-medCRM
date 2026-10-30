@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>TWC MedCRM — Healthcare Platform</title>
+  <meta name="description" content="Multi-Tenant Healthcare CRM & SaaS Platform powered by Google Workspace">
+  <meta name="theme-color" content="#0F3D3E">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TWC MedCRM">
+
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --brand-deep: #0F3D3E;
+      --brand-teal: #14B8A6;
+      --brand-glow: #2DD4BF;
+      --ink: #0F1B1B;
+      --ink-soft: #4A5856;
+      --cream-50: #FBF9F3;
+      --cream-100: #F7F4ED;
+      --line: #E5DFD2;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--brand-deep);
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #fff;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fullscreen Frame */
+    #appFrame {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: 10;
+    }
+    #appFrame.loaded {
+      opacity: 1;
+    }
+
+    /* Splash Screen */
+    #splashScreen {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: linear-gradient(135deg, #0F3D3E 0%, #08292A 60%, #051A1B 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      transition: opacity 0.45s ease, visibility 0.45s ease;
+    }
+    #splashScreen.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .brand-logo-card {
+      width: 88px;
+      height: 88px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+      animation: floatLogo 3s ease-in-out infinite alternate;
+    }
+    .brand-logo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 14px;
+    }
+
+    @keyframes floatLogo {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-6px); }
+    }
+
+    .splash-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+    .splash-subtitle {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 6px;
+      max-width: 340px;
+      line-height: 1.5;
+    }
+
+    .loading-bar-wrap {
+      width: 180px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 28px;
+      position: relative;
+    }
+    .loading-bar-indicator {
+      position: absolute;
+      left: -40%;
+      height: 100%;
+      width: 40%;
+      background: linear-gradient(90deg, #14B8A6, #2DD4BF);
+      border-radius: 999px;
+      animation: loadSlide 1.5s infinite ease-in-out;
+    }
+    @keyframes loadSlide {
+      0% { left: -40%; }
+      50% { left: 40%; width: 50%; }
+      100% { left: 100%; width: 40%; }
+    }
+
+    .splash-status {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.45);
+      margin-top: 12px;
+      font-family: monospace;
+    }
+
+    /* PWA Floating Install Action */
+    #pwaInstallBar {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      background: rgba(15, 61, 62, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(20, 184, 166, 0.4);
+      box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.45);
+      border-radius: 999px;
+      padding: 8px 18px 8px 12px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #pwaInstallBar:hover {
+      transform: translateX(-50%) translateY(-2px);
+      border-color: var(--brand-glow);
+    }
+    #pwaInstallBar.show {
+      display: flex;
+      animation: slideUpBar 0.35s ease;
+    }
+    @keyframes slideUpBar {
+      from { transform: translateX(-50%) translateY(24px); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+
+    .pwa-icon-bubble {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #14B8A6, #0D9488);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 13px;
+    }
+    .pwa-label-group {
+      text-align: left;
+    }
+    .pwa-label-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .pwa-label-sub {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* iOS Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(7, 41, 42, 0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.25s ease;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-card {
+      background: #fff;
+      color: var(--ink);
+      border-radius: 20px;
+      max-width: 420px;
+      width: 100%;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.4);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 0;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: #0F3D3E;
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: #115E59;
+    }
+    .btn-secondary {
+      background: #F7F4ED;
+      color: #4A5856;
+    }
+    .btn-secondary:hover {
+      background: #EFEAE0;
+    }
+
+    /* Offline Banner */
+    #offlineNotice {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 120;
+      background: #E11D48;
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 6px 16px rgba(225, 29, 72, 0.35);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Offline Notice -->
+  <div id="offlineNotice"><i class="fas fa-wifi-slash"></i> Offline mode — using cached resources</div>
+
+  <!-- Splash Screen -->
+  <div id="splashScreen">
+    <div class="brand-logo-card">
+      <img src="pwa-192x192.png" alt="TWC Labs Logo" onerror="this.src='favicon.png'">
+    </div>
+    <h1 class="splash-title">TWC MedCRM</h1>
+    <p class="splash-subtitle">Healthcare Customer Relationship Management &amp; Patient Telephony Concierge</p>
+    <div class="loading-bar-wrap">
+      <div class="loading-bar-indicator"></div>
+    </div>
+    <div class="splash-status" id="splashStatus">Connecting to secure Google Workspace instance...</div>
+  </div>
+
+  <!-- Main Standalone Google Apps Script Frame -->
+  <iframe
+    id="appFrame"
+    title="TWC MedCRM Healthcare Application"
+    allow="camera; microphone; geolocation; clipboard-read; clipboard-write; fullscreen; autoplay"
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"
+    src="about:blank">
+  </iframe>
+
+  <!-- Floating Install Action Button -->
+  <div id="pwaInstallBar" onclick="triggerPwaInstall()">
+    <div class="pwa-icon-bubble"><i class="fas fa-arrow-down-to-bracket"></i></div>
+    <div class="pwa-label-group">
+      <div class="pwa-label-title">Install TWC MedCRM Native App</div>
+      <div class="pwa-label-sub">Faster launch, offline cache &amp; desktop workspace</div>
+    </div>
+  </div>
+
+  <!-- iOS PWA Install Instructions Modal -->
+  <div id="iosInstallModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 text-teal-800 flex items-center justify-center mx-auto mb-3 text-xl">
+        <i class="fas fa-arrow-up-from-bracket"></i>
+      </div>
+      <h3 style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:17px;margin-bottom:8px;">Install on iPhone &amp; iPad</h3>
+      <div style="font-size:12px;color:var(--ink-soft);line-height:1.6;text-align:left;margin-bottom:18px;background:var(--cream-100);padding:14px;border-radius:12px;">
+        <div style="margin-bottom:6px;"><strong>1. Tap Safari's Share button</strong> <i class="fas fa-arrow-up-from-bracket" style="color:var(--brand-teal);"></i> at the bottom toolbar.</div>
+        <div style="margin-bottom:6px;"><strong>2. Scroll and tap</strong> <strong>"Add to Home Screen"</strong> <i class="fas fa-plus-square" style="color:var(--brand-teal);"></i>.</div>
+        <div><strong>3. Tap Add</strong> at top right to launch full-screen like a native app.</div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="closeIosModal()">Got It</button>
+    </div>
+  </div>
+
+  <!-- GAS Web App Configuration Modal (for initial deployment or changing URL) -->
+  <div id="configModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 text-teal-800 flex items-center justify-center mx-auto mb-3 text-xl">
+        <i class="fas fa-link"></i>
+      </div>
+      <h3 style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:17px;margin-bottom:6px;">Configure Apps Script URL</h3>
+      <p style="font-size:12px;color:var(--ink-soft);margin-bottom:14px;">Enter your deployed Google Apps Script Web App URL to link this PWA wrapper:</p>
+      <input type="url" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%;padding:10px 12px;font-size:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:14px;font-family:monospace;box-sizing:border-box;">
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary" style="flex:1;" onclick="closeConfigModal()">Cancel</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="saveConfiguredGasUrl()">Save &amp; Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * TWC MedCRM GitHub Pages PWA Engine
+     * Handles PWA lifecycle, Service Worker precache,
+     * and seamless Google Apps Script framing.
+     */
+
+    // 1. DEFAULT DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
+    // (Replace with your exact /exec URL or enter via the config dialog)
+    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbykpnJNxYWhcXdOl5NtzE5edIAN6ItRS1lFoy8VR0KGtNuX6vP8TCRPILVikZWSKFQA/exec';
+
+    let deferredPrompt = null;
+    let gasUrl = localStorage.getItem('twc_gas_webapp_url') || DEFAULT_GAS_URL;
+
+    // Check query params for dynamic URL override (e.g. ?gasUrl=https://...)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('gasUrl')) {
+      gasUrl = urlParams.get('gasUrl');
+      localStorage.setItem('twc_gas_webapp_url', gasUrl);
+    }
+
+    // 2. Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => {
+            console.log('TWC MedCRM PWA ServiceWorker active. Scope:', reg.scope);
+          })
+          .catch((err) => {
+            console.warn('ServiceWorker registration error:', err);
+          });
+      });
+    }
+
+    // 3. PWA Installation Handler
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      if (!isStandalone) {
+        const installBar = document.getElementById('pwaInstallBar');
+        if (installBar) installBar.classList.add('show');
+      }
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      const installBar = document.getElementById('pwaInstallBar');
+      if (installBar) installBar.classList.remove('show');
+      console.log('TWC MedCRM successfully installed to device.');
+    });
+
+    function triggerPwaInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choice) => {
+          if (choice.outcome === 'accepted') {
+            console.log('User accepted PWA installation');
+          }
+          deferredPrompt = null;
+          const installBar = document.getElementById('pwaInstallBar');
+          if (installBar) installBar.classList.remove('show');
+        });
+        return;
+      }
+
+      // iOS detection
+      const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+      if (isIOS) {
+        document.getElementById('iosInstallModal').classList.add('open');
+        return;
+      }
+
+      alert('To install, tap your browser menu (⋮) and select "Add to Home screen" or "Install App".');
+    }
+
+    function closeIosModal() {
+      document.getElementById('iosInstallModal').classList.remove('open');
+    }
+
+    function openConfigModal() {
+      document.getElementById('gasUrlInput').value = gasUrl || '';
+      document.getElementById('configModal').classList.add('open');
+    }
+
+    function closeConfigModal() {
+      document.getElementById('configModal').classList.remove('open');
+    }
+
+    function saveConfiguredGasUrl() {
+      const val = document.getElementById('gasUrlInput').value.trim();
+      if (!val) {
+        alert('Please enter a valid Google Apps Script Web App URL.');
+        return;
+      }
+      gasUrl = val;
+      localStorage.setItem('twc_gas_webapp_url', gasUrl);
+      closeConfigModal();
+      loadAppFrame(gasUrl);
+    }
+
+    // 4. Connectivity Monitoring
+    window.addEventListener('online', () => {
+      const el = document.getElementById('offlineNotice');
+      if (el) el.style.display = 'none';
+    });
+    window.addEventListener('offline', () => {
+      const el = document.getElementById('offlineNotice');
+      if (el) el.style.display = 'flex';
+    });
+
+    // 5. Iframe Loading Engine
+    function loadAppFrame(targetUrl) {
+      const frame = document.getElementById('appFrame');
+      const splash = document.getElementById('splashScreen');
+      const status = document.getElementById('splashStatus');
+
+      if (!targetUrl || targetUrl.includes('YOUR_DEPLOYMENT_ID')) {
+        if (status) status.textContent = 'Configuration required: Click below to set Web App URL.';
+        setTimeout(openConfigModal, 800);
+        return;
+      }
+
+      if (status) status.textContent = 'Loading clinical workspace...';
+
+      frame.src = targetUrl;
+
+      // Fail-safe timeout in case iframe is sandboxed or slow
+      const loadTimer = setTimeout(() => {
+        frame.classList.add('loaded');
+        splash.classList.add('fade-out');
+      }, 7000);
+
+      frame.onload = () => {
+        clearTimeout(loadTimer);
+        setTimeout(() => {
+          frame.classList.add('loaded');
+          splash.classList.add('fade-out');
+        }, 400);
+      };
+    }
+
+    // Keyboard shortcut to configure URL: Ctrl+Shift+U or double click logo
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'U' || e.key === 'u')) {
+        e.preventDefault();
+        openConfigModal();
+      }
+    });
+
+    // Launch
+    window.addEventListener('DOMContentLoaded', () => {
+      loadAppFrame(gasUrl);
+    });
+  </script>
+</body>
+</html>
