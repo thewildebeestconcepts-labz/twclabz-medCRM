@@ -12,13 +12,14 @@
   <meta name="apple-mobile-web-app-title" content="TWC MedCRM">
 
   <!-- PWA Manifest & Icons -->
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="64x64" href="./favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./pwa-192x192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Fonts -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
@@ -45,13 +46,93 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Top PWA Install & Status Bar */
+    #pwaTopBar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 48px;
+      z-index: 100;
+      background: rgba(15, 61, 62, 0.96);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(20, 184, 166, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      transition: transform 0.3s ease;
+    }
+    body.is-standalone #pwaTopBar {
+      display: none !important;
+    }
+    body.is-standalone #appFrame {
+      top: 0;
+      height: 100%;
+    }
+
+    .pwa-brand-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .pwa-brand-label img {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+    }
+
+    .pwa-top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-install {
+      background: linear-gradient(135deg, #14B8A6, #0D9488);
+      color: #fff;
+      border: 0;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(20, 184, 166, 0.35);
+      transition: all 0.2s;
+    }
+    .btn-install:hover {
+      transform: scale(1.03);
+      background: linear-gradient(135deg, #2DD4BF, #14B8A6);
+    }
+
+    .btn-icon {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
     /* Fullscreen Frame */
     #appFrame {
       position: absolute;
-      top: 0;
+      top: 48px;
       left: 0;
       width: 100%;
-      height: 100%;
+      height: calc(100% - 48px);
       border: 0;
       opacity: 0;
       transition: opacity 0.4s ease;
@@ -153,69 +234,12 @@
       font-family: monospace;
     }
 
-    /* PWA Floating Install Action */
-    #pwaInstallBar {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 100;
-      background: rgba(15, 61, 62, 0.94);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(20, 184, 166, 0.4);
-      box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.45);
-      border-radius: 999px;
-      padding: 8px 18px 8px 12px;
-      display: none;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    #pwaInstallBar:hover {
-      transform: translateX(-50%) translateY(-2px);
-      border-color: var(--brand-glow);
-    }
-    #pwaInstallBar.show {
-      display: flex;
-      animation: slideUpBar 0.35s ease;
-    }
-    @keyframes slideUpBar {
-      from { transform: translateX(-50%) translateY(24px); opacity: 0; }
-      to { transform: translateX(-50%) translateY(0); opacity: 1; }
-    }
-
-    .pwa-icon-bubble {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #14B8A6, #0D9488);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 13px;
-    }
-    .pwa-label-group {
-      text-align: left;
-    }
-    .pwa-label-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: #fff;
-    }
-    .pwa-label-sub {
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    /* iOS Modal */
+    /* Modal Backdrop */
     .modal-backdrop {
       position: fixed;
       inset: 0;
       z-index: 200;
-      background: rgba(7, 41, 42, 0.65);
+      background: rgba(7, 41, 42, 0.75);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       display: flex;
@@ -234,12 +258,14 @@
       background: #fff;
       color: var(--ink);
       border-radius: 20px;
-      max-width: 420px;
+      max-width: 440px;
       width: 100%;
       padding: 24px;
       text-align: center;
-      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.45);
+      position: relative;
     }
+
     .btn {
       display: inline-flex;
       align-items: center;
@@ -267,27 +293,44 @@
       background: #EFEAE0;
     }
 
-    /* Offline Banner */
+    /* Offline Notice */
     #offlineNotice {
       position: fixed;
-      top: 14px;
+      bottom: 16px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 120;
       background: #E11D48;
       color: #fff;
-      padding: 6px 16px;
+      padding: 8px 18px;
       border-radius: 999px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       display: none;
       align-items: center;
-      gap: 6px;
-      box-shadow: 0 6px 16px rgba(225, 29, 72, 0.35);
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(225, 29, 72, 0.4);
     }
   </style>
 </head>
 <body>
+
+  <!-- Top PWA Install & Control Bar -->
+  <header id="pwaTopBar">
+    <div class="pwa-brand-label">
+      <img src="./pwa-192x192.png" alt="TWC" onerror="this.src='./favicon.png'">
+      <span>TWC MedCRM</span>
+    </div>
+    <div class="pwa-top-actions">
+      <button class="btn-install" id="installBtnTop" onclick="triggerPwaInstall()">
+        <i class="fas fa-download"></i>
+        <span>Install App</span>
+      </button>
+      <button class="btn-icon" onclick="openConfigModal()" title="Settings">
+        <i class="fas fa-gear"></i>
+      </button>
+    </div>
+  </header>
 
   <!-- Offline Notice -->
   <div id="offlineNotice"><i class="fas fa-wifi-slash"></i> Offline mode — using cached resources</div>
@@ -295,7 +338,7 @@
   <!-- Splash Screen -->
   <div id="splashScreen">
     <div class="brand-logo-card">
-      <img src="pwa-192x192.png" alt="TWC Labs Logo" onerror="this.src='favicon.png'">
+      <img src="./pwa-192x192.png" alt="TWC Labs Logo" onerror="this.src='./favicon.png'">
     </div>
     <h1 class="splash-title">TWC MedCRM</h1>
     <p class="splash-subtitle">Healthcare Customer Relationship Management &amp; Patient Telephony Concierge</p>
@@ -314,38 +357,45 @@
     src="about:blank">
   </iframe>
 
-  <!-- Floating Install Action Button -->
-  <div id="pwaInstallBar" onclick="triggerPwaInstall()">
-    <div class="pwa-icon-bubble"><i class="fas fa-arrow-down-to-bracket"></i></div>
-    <div class="pwa-label-group">
-      <div class="pwa-label-title">Install TWC MedCRM Native App</div>
-      <div class="pwa-label-sub">Faster launch, offline cache &amp; desktop workspace</div>
+  <!-- Android Chrome PWA Install Instructions Modal (When prompt not yet ambient) -->
+  <div id="androidInstallModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div style="width:48px;height:48px;border-radius:16px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:20px;">
+        <i class="fab fa-android"></i>
+      </div>
+      <h3 style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;margin-bottom:8px;color:#0F1B1B;">Install TWC MedCRM on Android</h3>
+      <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;text-align:left;margin-bottom:18px;background:var(--cream-100);padding:14px;border-radius:12px;">
+        <div style="margin-bottom:8px;"><strong>1. Tap the 3 dots (⋮)</strong> in Chrome at the top-right corner.</div>
+        <div style="margin-bottom:8px;"><strong>2. Select "Install App"</strong> or <strong>"Add to Home screen"</strong>.</div>
+        <div><strong>3. Tap "Install"</strong> in the popup to add the full-screen hospital CRM app.</div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="closeAndroidModal()">Got It</button>
     </div>
   </div>
 
   <!-- iOS PWA Install Instructions Modal -->
   <div id="iosInstallModal" class="modal-backdrop">
     <div class="modal-card">
-      <div class="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 text-teal-800 flex items-center justify-center mx-auto mb-3 text-xl">
+      <div style="width:48px;height:48px;border-radius:16px;background:#f0fdfa;border:1px solid #99f6e4;color:#0f766e;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:20px;">
         <i class="fas fa-arrow-up-from-bracket"></i>
       </div>
-      <h3 style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:17px;margin-bottom:8px;">Install on iPhone &amp; iPad</h3>
-      <div style="font-size:12px;color:var(--ink-soft);line-height:1.6;text-align:left;margin-bottom:18px;background:var(--cream-100);padding:14px;border-radius:12px;">
-        <div style="margin-bottom:6px;"><strong>1. Tap Safari's Share button</strong> <i class="fas fa-arrow-up-from-bracket" style="color:var(--brand-teal);"></i> at the bottom toolbar.</div>
-        <div style="margin-bottom:6px;"><strong>2. Scroll and tap</strong> <strong>"Add to Home Screen"</strong> <i class="fas fa-plus-square" style="color:var(--brand-teal);"></i>.</div>
+      <h3 style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;margin-bottom:8px;color:#0F1B1B;">Install on iPhone &amp; iPad</h3>
+      <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;text-align:left;margin-bottom:18px;background:var(--cream-100);padding:14px;border-radius:12px;">
+        <div style="margin-bottom:8px;"><strong>1. Tap Safari's Share button</strong> <i class="fas fa-arrow-up-from-bracket" style="color:var(--brand-teal);"></i> at the bottom toolbar.</div>
+        <div style="margin-bottom:8px;"><strong>2. Scroll down and tap</strong> <strong>"Add to Home Screen"</strong> <i class="fas fa-plus-square" style="color:var(--brand-teal);"></i>.</div>
         <div><strong>3. Tap Add</strong> at top right to launch full-screen like a native app.</div>
       </div>
       <button class="btn btn-primary" style="width:100%;" onclick="closeIosModal()">Got It</button>
     </div>
   </div>
 
-  <!-- GAS Web App Configuration Modal (for initial deployment or changing URL) -->
+  <!-- GAS Web App Configuration Modal -->
   <div id="configModal" class="modal-backdrop">
     <div class="modal-card">
-      <div class="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 text-teal-800 flex items-center justify-center mx-auto mb-3 text-xl">
+      <div style="width:48px;height:48px;border-radius:16px;background:#f0fdfa;border:1px solid #99f6e4;color:#0f766e;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:20px;">
         <i class="fas fa-link"></i>
       </div>
-      <h3 style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:17px;margin-bottom:6px;">Configure Apps Script URL</h3>
+      <h3 style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;margin-bottom:6px;color:#0F1B1B;">Configure Google Apps Script URL</h3>
       <p style="font-size:12px;color:var(--ink-soft);margin-bottom:14px;">Enter your deployed Google Apps Script Web App URL to link this PWA wrapper:</p>
       <input type="url" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%;padding:10px 12px;font-size:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:14px;font-family:monospace;box-sizing:border-box;">
       <div style="display:flex;gap:8px;">
@@ -357,78 +407,108 @@
 
   <script>
     /**
-     * TWC MedCRM GitHub Pages PWA Engine
-     * Handles PWA lifecycle, Service Worker precache,
-     * and seamless Google Apps Script framing.
+     * TWC MedCRM GitHub Pages PWA Engine (v4)
+     * High-compatibility Android Chrome, iOS Safari & Desktop PWA Shell
      */
 
-    // 1. DEFAULT DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
-    // (Replace with your exact /exec URL or enter via the config dialog)
-    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbykpnJNxYWhcXdOl5NtzE5edIAN6ItRS1lFoy8VR0KGtNuX6vP8TCRPILVikZWSKFQA/exec';
+    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbwYOUR_DEPLOYMENT_ID/exec';
 
     let deferredPrompt = null;
     let gasUrl = localStorage.getItem('twc_gas_webapp_url') || DEFAULT_GAS_URL;
 
-    // Check query params for dynamic URL override (e.g. ?gasUrl=https://...)
+    // Check query params for dynamic URL override (?gasUrl=...)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('gasUrl')) {
       gasUrl = urlParams.get('gasUrl');
       localStorage.setItem('twc_gas_webapp_url', gasUrl);
     }
 
-    // 2. Service Worker Registration
+    // Detect standalone mode
+    function checkStandalone() {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true ||
+        document.referrer.includes('android-app://');
+      if (isStandalone) {
+        document.body.classList.add('is-standalone');
+      } else {
+        document.body.classList.remove('is-standalone');
+      }
+      return isStandalone;
+    }
+    checkStandalone();
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', checkStandalone);
+
+    // 1. Service Worker Registration with explicit scope
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
+        navigator.serviceWorker.register('./sw.js', { scope: './' })
           .then((reg) => {
-            console.log('TWC MedCRM PWA ServiceWorker active. Scope:', reg.scope);
+            console.log('[PWA] ServiceWorker registered with scope:', reg.scope);
+            // Check for updates
+            reg.onupdatefound = () => {
+              const installingWorker = reg.installing;
+              if (installingWorker) {
+                installingWorker.onstatechange = () => {
+                  if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('[PWA] New version available.');
+                  }
+                };
+              }
+            };
           })
           .catch((err) => {
-            console.warn('ServiceWorker registration error:', err);
+            console.warn('[PWA] ServiceWorker registration error:', err);
           });
       });
     }
 
-    // 3. PWA Installation Handler
+    // 2. Android Chrome beforeinstallprompt Event
     window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
+      // Stash the event so it can be triggered on user action
       deferredPrompt = e;
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-      if (!isStandalone) {
-        const installBar = document.getElementById('pwaInstallBar');
-        if (installBar) installBar.classList.add('show');
+      console.log('[PWA] beforeinstallprompt captured successfully.');
+      const installBtn = document.getElementById('installBtnTop');
+      if (installBtn && !checkStandalone()) {
+        installBtn.style.display = 'inline-flex';
       }
     });
 
     window.addEventListener('appinstalled', () => {
       deferredPrompt = null;
-      const installBar = document.getElementById('pwaInstallBar');
-      if (installBar) installBar.classList.remove('show');
-      console.log('TWC MedCRM successfully installed to device.');
+      checkStandalone();
+      console.log('[PWA] Application installed to device.');
     });
 
-    function triggerPwaInstall() {
+    // 3. User Triggered Install Flow
+    async function triggerPwaInstall() {
+      // Flow A: Chrome on Android / Desktop with captured prompt
       if (deferredPrompt) {
         deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choice) => {
-          if (choice.outcome === 'accepted') {
-            console.log('User accepted PWA installation');
-          }
-          deferredPrompt = null;
-          const installBar = document.getElementById('pwaInstallBar');
-          if (installBar) installBar.classList.remove('show');
-        });
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          console.log('[PWA] User accepted installation prompt');
+        } else {
+          console.log('[PWA] User dismissed installation prompt');
+        }
+        deferredPrompt = null;
         return;
       }
 
-      // iOS detection
+      // Flow B: iOS Safari
       const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
       if (isIOS) {
         document.getElementById('iosInstallModal').classList.add('open');
         return;
       }
 
-      alert('To install, tap your browser menu (⋮) and select "Add to Home screen" or "Install App".');
+      // Flow C: Android Chrome fallback (e.g. beforeinstallprompt pending)
+      document.getElementById('androidInstallModal').classList.add('open');
+    }
+
+    function closeAndroidModal() {
+      document.getElementById('androidInstallModal').classList.remove('open');
     }
 
     function closeIosModal() {
@@ -456,7 +536,7 @@
       loadAppFrame(gasUrl);
     }
 
-    // 4. Connectivity Monitoring
+    // 4. Online / Offline Monitoring
     window.addEventListener('online', () => {
       const el = document.getElementById('offlineNotice');
       if (el) el.style.display = 'none';
@@ -466,14 +546,14 @@
       if (el) el.style.display = 'flex';
     });
 
-    // 5. Iframe Loading Engine
+    // 5. Iframe Loader
     function loadAppFrame(targetUrl) {
       const frame = document.getElementById('appFrame');
       const splash = document.getElementById('splashScreen');
       const status = document.getElementById('splashStatus');
 
       if (!targetUrl || targetUrl.includes('YOUR_DEPLOYMENT_ID')) {
-        if (status) status.textContent = 'Configuration required: Click below to set Web App URL.';
+        if (status) status.textContent = 'Configuration required: Tap Settings (⚙️) to enter Web App URL.';
         setTimeout(openConfigModal, 800);
         return;
       }
@@ -482,7 +562,6 @@
 
       frame.src = targetUrl;
 
-      // Fail-safe timeout in case iframe is sandboxed or slow
       const loadTimer = setTimeout(() => {
         frame.classList.add('loaded');
         splash.classList.add('fade-out');
@@ -497,7 +576,7 @@
       };
     }
 
-    // Keyboard shortcut to configure URL: Ctrl+Shift+U or double click logo
+    // Keyboard shortcut to configure URL: Ctrl+Shift+U
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'U' || e.key === 'u')) {
         e.preventDefault();
